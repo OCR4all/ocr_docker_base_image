@@ -1,5 +1,5 @@
 # Base Image
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -14,22 +14,27 @@ RUN apt-get update && apt-get install -y \
     locales \
     git \
     maven \
-    tomcat8 \
+    tomcat9 \
     openjdk-8-jdk-headless \
-    python python-pip python3 python3-pip python3-pil python-tk \
+    python2 python3 python3-pip python3-pil python-tk \
+    curl \
     wget && \
     rm -rf /var/lib/apt/lists/*
 
+# Manually install pip for Python 2 as it's no longer installable from apt in Ubuntu 20.04
+RUN curl https://bootstrap.pypa.io/get-pip.py --output get-pip.py && \
+    python2 get-pip.py
+
 # Installing python dependencies
-RUN python -m pip install --upgrade pip && \
-    python -m pip install --upgrade -r /tmp/requirements_py2.txt && \
+RUN python2 -m pip install --upgrade pip && \
+    python2 -m pip install --upgrade -r /tmp/requirements_py2.txt && \
     python3 -m pip install --upgrade pip && \
     python3 -m pip install --upgrade -r /tmp/requirements_py3.txt && \
     rm /tmp/requirements_py2.txt /tmp/requirements_py3.txt
 
 # Set the locale, Solve Tomcat issues with Ubuntu
 RUN locale-gen en_US.UTF-8
-ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8 CATALINA_HOME=/usr/share/tomcat8
+ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8 CATALINA_HOME=/usr/share/tomcat9
 
 # Force tomcat to use java 8
 RUN rm /usr/lib/jvm/default-java && \
